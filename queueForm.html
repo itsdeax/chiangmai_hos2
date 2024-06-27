@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ฟอร์มการรับคิวโรงพยาบาล</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h2>ฟอร์มการรับคิวโรงพยาบาล</h2>
+        <form id="queueForm">
+            <label for="title">คำนำหน้าชื่อ:</label>
+            <select id="title" name="title" required>
+                <option value="นาย">นาย</option>
+                <option value="นาง">นาง</option>
+                <option value="นางสาว">นางสาว</option>
+                <option value="เด็กชาย">เด็กชาย</option>
+                <option value="เด็กหญิง">เด็กหญิง</option>
+            </select>
+            
+            <label for="firstname">ชื่อ:</label>
+            <input type="text" id="firstname" name="firstname" required>
+            
+            <label for="lastname">นามสกุล:</label>
+            <input type="text" id="lastname" name="lastname" required>
+            
+            <label for="phone">เบอร์โทรศัพท์:</label>
+            <input type="tel" id="phone" name="phone" required pattern="[0-9]{10}">
+            
+            <button type="submit">รับคิว</button>
+        </form>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
