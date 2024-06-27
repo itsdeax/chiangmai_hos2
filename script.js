@@ -1,4 +1,4 @@
-const scriptURL = 'https://script.google.com/macros/s/AKfycbysoc16x4t3piYiYoCsuXTbG3pxSFHVK6CrUg-OT2e5SY6bUFK1fc1O_-zCTHErzxHp0Q/exec';
+const scriptURL = 'https://script.google.com/macros/s/AKfycbwnaLK1EDLX7x67mMjLqfztYOYxSc_M4ZUMHhVwpMxDUtHEc7ddKX7cUgbGOeDI4cGI6Q/exec';
 const form = document.getElementById('queueForm');
 
 form.addEventListener('submit', e => {
