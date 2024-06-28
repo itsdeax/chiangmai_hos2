@@ -37,9 +37,10 @@ function doPost(e) {
             var firstname = params.firstname;
             var lastname = params.lastname;
             var phone = params.phone;
+            var userId = params.userId; // รับ userId จากฟอร์มด้วย
             
             // ทำการบันทึกข้อมูลลงใน Google Spreadsheet
-            sheet.appendRow([new Date(), title, firstname, lastname, phone]);
+            sheet.appendRow([new Date(), title, firstname, lastname, phone, userId]);
             
             // ส่งคำตอบกลับไปยัง JavaScript ในรูปแบบ JSON
             return ContentService.createTextOutput(JSON.stringify({result: 'success'})).setMimeType(ContentService.MimeType.JSON);
@@ -63,7 +64,7 @@ function deleteData(userId) {
 
         // ค้นหาแถวที่มี userId ที่ต้องการลบ
         for (var i = 1; i < values.length; i++) {
-            if (values[i][1] == userId) { // ตรวจสอบคอลัมน์ที่ 1 (หลักคอลัมน์ B) เป็น userId ที่ต้องการลบ
+            if (values[i][5] == userId) { // ตรวจสอบคอลัมน์ที่ 6 (หลักคอลัมน์ F) เป็น userId ที่ต้องการลบ
                 rowIndexToDelete = i + 1; // ระบุ index ของแถวที่จะลบโดยเพิ่ม 1 เนื่องจากข้อมูลใน values นับแถวเริ่มต้นที่ 0
                 break;
             }
