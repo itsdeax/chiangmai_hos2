@@ -13,7 +13,7 @@ function doPost(e) {
                 var userId = events[i].source.userId;
         
                 // ตรวจสอบว่าข้อความที่ส่งมาเป็นคำสั่งลบหรือไม่
-                if (messageText === 'delete') {
+                if (messageText === 'ยกเลิกคิว') {
                     var success = deleteData(userId); // เรียกใช้ฟังก์ชันลบข้อมูลโดยส่ง userId เข้าไป
                     if (success) {
                         replyMessage(userId, 'ลบข้อมูลเรียบร้อยแล้ว');
