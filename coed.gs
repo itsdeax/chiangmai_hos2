@@ -2,16 +2,20 @@ var sheetId = '10PLflIEwQhYbzw0O2wU4YhXlzvHHpchYHpxzNIFIM3s'; // แทนที
 
 function doPost(e) {
     try {
+        if (!e.postData || !e.postData.contents) {
+            throw new Error('No data received or postData.contents is empty.');
+        }
+
         var json = JSON.parse(e.postData.contents);
         var events = json.events;
-        
+
         for (var i = 0; i < events.length; i++) {
             var eventType = events[i].type;
-            
+
             if (eventType === 'message') {
                 var messageText = events[i].message.text.trim();
                 var userId = events[i].source.userId;
-        
+
                 // ตรวจสอบว่าข้อความที่ส่งมาเป็นคำสั่งลบหรือไม่
                 if (messageText === 'ยกเลิกคิว') {
                     var success = deleteData(userId); // เรียกใช้ฟังก์ชันลบข้อมูลโดยส่ง userId เข้าไป
@@ -26,24 +30,21 @@ function doPost(e) {
                 // ตรวจสอบข้อมูล postbackData แล้วดำเนินการตามต้องการ
             }
         }
-        
+
         if (e.parameter) {
             var params = e.parameter; // ดึงข้อมูลจากพารามิเตอร์ที่ส่งเข้ามา
 
             var sheet = SpreadsheetApp.openById(sheetId).getSheetByName('database');
-            
-            // ดึงค่าจากฟอร์ม
+
             var title = params.title;
             var firstname = params.firstname;
             var lastname = params.lastname;
             var phone = params.phone;
-            var userId = params.userId; // รับ userId จากฟอร์มด้วย
-            
-            // ทำการบันทึกข้อมูลลงใน Google Spreadsheet
-            sheet.appendRow([new Date(), title, firstname, lastname, phone, userId]);
-            
-            // ส่งคำตอบกลับไปยัง JavaScript ในรูปแบบ JSON
-            return ContentService.createTextOutput(JSON.stringify({result: 'success'})).setMimeType(ContentService.MimeType.JSON);
+            var userId = params.userId; // เพิ่มการรับค่า userId
+
+            sheet.appendRow([new Date(), title, firstname, lastname, phone, userId]); // เพิ่ม userId ในการบันทึกข้อมูล
+
+            return ContentService.createTextOutput(JSON.stringify({ result: 'success' })).setMimeType(ContentService.MimeType.JSON);
         } else {
             throw new Error('ไม่มีข้อมูลที่ถูกส่งมา');
         }
@@ -57,7 +58,7 @@ function doPost(e) {
 function deleteData(userId) {
     try {
         var sheet = SpreadsheetApp.openById(sheetId).getSheetByName('database');
-        
+
         var dataRange = sheet.getDataRange();
         var values = dataRange.getValues();
         var rowIndexToDelete = -1;
@@ -88,8 +89,11 @@ function replyMessage(userId, message) {
     var url = 'https://api.line.me/v2/bot/message/push';
     var headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer z5+XBeeWe7b/P8RLP3vbkLQMucyEgaFeQBkFaoNl2M1FYekiw5br45poqbybnvs1qupnH7TYJS0lV0QWj8kiIwbwa4HibEyAvWCG7WkFAIomkJqeewxRGWMM9Hl39Fpc+Tsv9TQ+xGjM+EbPxor/CQdB04t89/1O/w1cDnyilFU=' // แทนที่ด้วย Channel Access Token ของคุณ
+        'Authorization': 'Bearer O0EWlYQreieO4zasx9jX32H0m3z5HGXSkF6vfkptJa85hCAJJ9GpE2wLoG8yetb52E6J+0R59H22ErffFX0MokHar2W9kih1KC++KRYa+vFuWJRsqy+f8XLvshJ5ad4UdZWah+vk/tMYwYOn2xOpNAdB04t89/1O/w1cDnyilFU=' // แทนที่ด้วย Channel Access Token ของคุณ
     };
+    if (!message) {
+    throw new Error('Message cannot be empty');
+}
     var postData = {
         'to': userId,
         'messages': [{
