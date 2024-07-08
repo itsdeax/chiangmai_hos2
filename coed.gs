@@ -1,50 +1,64 @@
 var sheetId = '10PLflIEwQhYbzw0O2wU4YhXlzvHHpchYHpxzNIFIM3s'; // แทนที่ด้วย ID ของ Google Spreadsheet ที่ใช้เก็บข้อมูล
 
+function doGet(e) {
+    return HtmlService.createHtmlOutput('Google Apps Script is deployed successfully.');
+}
+
 function doPost(e) {
     try {
-        if (!e.postData || !e.postData.contents) {
-            throw new Error('No data received or postData.contents is empty.');
-        }
+        if (e.postData && e.postData.contents) {
+            var contentType = e.postData.type;
+            var postData;
 
-        var json = JSON.parse(e.postData.contents);
-        var events = json.events;
+            if (contentType === 'application/json') {
+                postData = JSON.parse(e.postData.contents);
+            } else {
+                postData = parseQueryString(e.postData.contents);
+            }
 
-        for (var i = 0; i < events.length; i++) {
-            var eventType = events[i].type;
+            Logger.log('Post Data: ' + JSON.stringify(postData));
 
-            if (eventType === 'message') {
-                var messageText = events[i].message.text.trim();
-                var userId = events[i].source.userId;
+            if (postData.events) {
+                var events = postData.events;
 
-                // ตรวจสอบว่าข้อความที่ส่งมาเป็นคำสั่งลบหรือไม่
-                if (messageText === 'ยกเลิกคิว') {
-                    var success = deleteData(userId); // เรียกใช้ฟังก์ชันลบข้อมูลโดยส่ง userId เข้าไป
-                    if (success) {
-                        replyMessage(userId, 'ลบข้อมูลเรียบร้อยแล้ว');
-                    } else {
-                        replyMessage(userId, 'เกิดข้อผิดพลาดในการลบข้อมูล');
+                for (var i = 0; i < events.length; i++) {
+                    var eventType = events[i].type;
+
+                    if (eventType === 'message') {
+                        var messageText = events[i].message.text.trim();
+                        var userId = events[i].source.userId;
+
+                        // ตรวจสอบว่าข้อความที่ส่งมาเป็นคำสั่งลบหรือไม่
+                        if (messageText === 'ยกเลิกคิว') {
+                            var success = deleteData(userId); // เรียกใช้ฟังก์ชันลบข้อมูลโดยส่ง userId เข้าไป
+                            if (success) {
+                                replyMessage(userId, 'ลบข้อมูลเรียบร้อยแล้ว');
+                            } else {
+                                replyMessage(userId, 'เกิดข้อผิดพลาดในการลบข้อมูล');
+                            }
+                        }
+                    } else if (eventType === 'postback') {
+                        var postbackData = events[i].postback.data;
+                        // ตรวจสอบข้อมูล postbackData แล้วดำเนินการตามต้องการ
                     }
                 }
-            } else if (eventType === 'postback') {
-                var postbackData = events[i].postback.data;
-                // ตรวจสอบข้อมูล postbackData แล้วดำเนินการตามต้องการ
+            } else if (postData.title && postData.firstname && postData.lastname && postData.phone) {
+                var sheet = SpreadsheetApp.openById(sheetId).getSheetByName('database');
+
+                // ดึงค่าจากฟอร์ม
+                var title = postData.title;
+                var firstname = postData.firstname;
+                var lastname = postData.lastname;
+                var phone = postData.phone;
+
+                // ทำการบันทึกข้อมูลลงใน Google Spreadsheet
+                sheet.appendRow([new Date(), title, firstname, lastname, phone]);
+
+                // ส่งคำตอบกลับไปยัง JavaScript ในรูปแบบ JSON
+                return ContentService.createTextOutput(JSON.stringify({result: 'success'})).setMimeType(ContentService.MimeType.JSON);
+            } else {
+                throw new Error('ไม่มีข้อมูลที่ถูกส่งมา');
             }
-        }
-
-        if (e.parameter) {
-            var params = e.parameter; // ดึงข้อมูลจากพารามิเตอร์ที่ส่งเข้ามา
-
-            var sheet = SpreadsheetApp.openById(sheetId).getSheetByName('database');
-
-            var title = params.title;
-            var firstname = params.firstname;
-            var lastname = params.lastname;
-            var phone = params.phone;
-            var userId = params.userId; // เพิ่มการรับค่า userId
-
-            sheet.appendRow([new Date(), title, firstname, lastname, phone, userId]); // เพิ่ม userId ในการบันทึกข้อมูล
-
-            return ContentService.createTextOutput(JSON.stringify({ result: 'success' })).setMimeType(ContentService.MimeType.JSON);
         } else {
             throw new Error('ไม่มีข้อมูลที่ถูกส่งมา');
         }
@@ -65,7 +79,7 @@ function deleteData(userId) {
 
         // ค้นหาแถวที่มี userId ที่ต้องการลบ
         for (var i = 1; i < values.length; i++) {
-            if (values[i][5] == userId) { // ตรวจสอบคอลัมน์ที่ 6 (หลักคอลัมน์ F) เป็น userId ที่ต้องการลบ
+            if (values[i][1] == userId) { // ตรวจสอบคอลัมน์ที่ 1 (หลักคอลัมน์ B) เป็น userId ที่ต้องการลบ
                 rowIndexToDelete = i + 1; // ระบุ index ของแถวที่จะลบโดยเพิ่ม 1 เนื่องจากข้อมูลใน values นับแถวเริ่มต้นที่ 0
                 break;
             }
@@ -86,14 +100,16 @@ function deleteData(userId) {
 
 // ฟังก์ชันสำหรับตอบกลับข้อความไปยัง LINE OA
 function replyMessage(userId, message) {
+    if (!message) {
+        Logger.log('Error: message is empty');
+        return;
+    }
+
     var url = 'https://api.line.me/v2/bot/message/push';
     var headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer O0EWlYQreieO4zasx9jX32H0m3z5HGXSkF6vfkptJa85hCAJJ9GpE2wLoG8yetb52E6J+0R59H22ErffFX0MokHar2W9kih1KC++KRYa+vFuWJRsqy+f8XLvshJ5ad4UdZWah+vk/tMYwYOn2xOpNAdB04t89/1O/w1cDnyilFU=' // แทนที่ด้วย Channel Access Token ของคุณ
+        'Authorization': 'Bearer z5+XBeeWe7b/P8RLP3vbkLQMucyEgaFeQBkFaoNl2M1FYekiw5br45poqbybnvs1qupnH7TYJS0lV0QWj8kiIwbwa4HibEyAvWCG7WkFAIomkJqeewxRGWMM9Hl39Fpc+Tsv9TQ+xGjM+EbPxor/CQdB04t89/1O/w1cDnyilFU=' // แทนที่ด้วย Channel Access Token ของคุณ
     };
-    if (!message) {
-    throw new Error('Message cannot be empty');
-}
     var postData = {
         'to': userId,
         'messages': [{
@@ -104,7 +120,26 @@ function replyMessage(userId, message) {
     var options = {
         'method': 'post',
         'headers': headers,
-        'payload': JSON.stringify(postData)
+        'payload': JSON.stringify(postData),
+        'muteHttpExceptions': true
     };
-    UrlFetchApp.fetch(url, options);
+
+    var response = UrlFetchApp.fetch(url, options);
+    Logger.log(response.getContentText());
+}
+
+// ฟังก์ชันสำหรับแปลงข้อมูล query string เป็น JSON
+function parseQueryString(query) {
+    if (!query) {
+        return {};
+    }
+    var params = query.split('&');
+    var obj = {};
+    params.forEach(function(param) {
+        var keyValue = param.split('=');
+        var key = decodeURIComponent(keyValue[0]);
+        var value = decodeURIComponent(keyValue[1]);
+        obj[key] = value;
+    });
+    return obj;
 }
