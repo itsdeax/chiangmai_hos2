@@ -24,12 +24,12 @@ function doPost(e) {
                 for (var i = 0; i < events.length; i++) {
                     var eventType = events[i].type;
 
-                    if (eventType === 'message') {
+                    if (eventType == 'message') {
                         var messageText = events[i].message.text.trim();
                         var userId = events[i].source.userId;
 
                         // ตรวจสอบว่าข้อความที่ส่งมาเป็นคำสั่งลบหรือไม่
-                        if (messageText === 'ยกเลิกคิว') {
+                        if (messageText == 'ยกเลิกคิว') {
                             var success = deleteData(userId); // เรียกใช้ฟังก์ชันลบข้อมูลโดยส่ง userId เข้าไป
                             if (success) {
                                 replyMessage(userId, 'ลบข้อมูลเรียบร้อยแล้ว');
@@ -151,4 +151,3 @@ function parseQueryString(query) {
     });
     return obj;
 }
-
