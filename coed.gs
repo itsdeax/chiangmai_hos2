@@ -43,6 +43,8 @@ function doPost(e) {
                     }
                 }
             } else if (postData.title && postData.firstname && postData.lastname && postData.phone) {
+                var userId = postData.userId; // รับ userId จาก postData
+
                 var sheet = SpreadsheetApp.openById(sheetId).getSheetByName('database');
 
                 // ดึงค่าจากฟอร์ม
@@ -52,7 +54,7 @@ function doPost(e) {
                 var phone = postData.phone;
 
                 // ทำการบันทึกข้อมูลลงใน Google Spreadsheet
-                sheet.appendRow([new Date(), title, firstname, lastname, phone]);
+                sheet.appendRow([new Date(), userId, title, firstname, lastname, phone]);
 
                 // ส่งคำตอบกลับไปยัง JavaScript ในรูปแบบ JSON
                 return ContentService.createTextOutput(JSON.stringify({result: 'success'})).setMimeType(ContentService.MimeType.JSON);
@@ -77,8 +79,12 @@ function deleteData(userId) {
         var values = dataRange.getValues();
         var rowIndexToDelete = -1;
 
+        // เพิ่มการบันทึกเพื่อดูข้อมูลในแต่ละแถว
+        Logger.log('userId ที่ต้องการลบ: ' + userId);
+
         // ค้นหาแถวที่มี userId ที่ต้องการลบ
         for (var i = 1; i < values.length; i++) {
+            Logger.log('Row ' + i + ': ' + values[i][1]); // เพิ่มการบันทึกค่าในคอลัมน์ userId
             if (values[i][1] == userId) { // ตรวจสอบคอลัมน์ที่ 1 (หลักคอลัมน์ B) เป็น userId ที่ต้องการลบ
                 rowIndexToDelete = i + 1; // ระบุ index ของแถวที่จะลบโดยเพิ่ม 1 เนื่องจากข้อมูลใน values นับแถวเริ่มต้นที่ 0
                 break;
@@ -88,8 +94,10 @@ function deleteData(userId) {
         if (rowIndexToDelete > 0) {
             // ลบแถวที่พบ userId ที่ต้องการ
             sheet.deleteRow(rowIndexToDelete);
+            Logger.log('ลบแถวที่: ' + rowIndexToDelete);
             return true;
         } else {
+            Logger.log('ไม่พบ userId ที่ต้องการลบ');
             return false; // ไม่พบ userId ที่ต้องการลบ
         }
     } catch (error) {
