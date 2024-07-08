@@ -10,7 +10,7 @@ document.getElementById('queueForm').addEventListener('submit', function(e) {
         userId: 'YOUR_USER_ID'  // แทนที่ด้วยวิธีการรับค่า userId ที่ต้องการ
     };
 
-    fetch('https://script.google.com/macros/s/AKfycbydnPMA3zb_x1v6hI5FB5Olfrp2tDXsNEEreeYzlQepsIwywhjDzHHpoSzme4Rj3B-Ovw/exec', {  // ตรวจสอบ URL ตรงนี้
+    fetch('https://script.google.com/macros/s/AKfycbx-PeZi9XhPlPRDnclCW7Q9bkauOEyU4lSLo0v5OCoC0m_1vRsloIV0kzru7dEcy69yGA/exec', {  // ตรวจสอบ URL ตรงนี้
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
