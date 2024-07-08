@@ -122,7 +122,7 @@ function replyMessage(userId, message) {
         'to': userId,
         'messages': [{
             'type': 'text',
-            'text': รับคิว
+            'text': message
         }]
     };
     var options = {
